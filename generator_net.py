@@ -4,7 +4,7 @@ import torch.nn as nn
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, down=True, use_act=True, **kwargs):
         super().__init__()
-        #卷积/尾部卷积层，可进行上采样也可进行下采样
+        #卷积/微步卷积层，可进行上采样也可进行下采样
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, padding_mode="reflect", **kwargs)
             if down
