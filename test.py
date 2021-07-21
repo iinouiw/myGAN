@@ -7,8 +7,8 @@ import torch.optim as optim
 import config
 from tqdm import tqdm
 from torchvision.utils import save_image
-from discriminator_model import Discriminator
-from generator_model import Generator
+from discriminator_net import Discriminator
+from generator_net import Generator
 
 def test_fn( gen_Z, gen_H, loader,):
     loop = tqdm(loader, leave=True)

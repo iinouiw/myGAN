@@ -2,7 +2,9 @@ from PIL import Image
 import os
 from torch.utils.data import Dataset
 import numpy as np
+import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+#获取数据集
 class HorseZebraDataset(Dataset):
     def __init__(self, root_zebra, root_horse, transform=None):
         self.root_zebra = root_zebra
@@ -14,10 +16,10 @@ class HorseZebraDataset(Dataset):
         self.length_dataset = max(len(self.zebra_images), len(self.horse_images)) # 1000, 1500
         self.zebra_len = len(self.zebra_images)
         self.horse_len = len(self.horse_images)
-
+#重写数据集长度的函数
     def __len__(self):
         return self.length_dataset
-
+#重写获取元素的函数
     def __getitem__(self, index):
         zebra_img = self.zebra_images[index % self.zebra_len]
         horse_img = self.horse_images[index % self.horse_len]
@@ -34,8 +36,3 @@ class HorseZebraDataset(Dataset):
             horse_img = augmentations["image0"]
 
         return zebra_img, horse_img
-
-
-
-
-

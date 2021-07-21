@@ -4,7 +4,6 @@ import config
 import copy
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-
 def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     checkpoint = {

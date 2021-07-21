@@ -1,13 +1,12 @@
 import torch
 import torch.nn as nn
-import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
 class Block(nn.Module):
     def __init__(self, in_channels, out_channels, stride):
         super().__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 4, stride, 1, bias=True, padding_mode="reflect"),
-            nn.InstanceNorm2d(out_channels),
+            nn.InstanceNorm2d(out_channels),#在风格迁移中好于BatchNorm
             nn.LeakyReLU(0.2, inplace=True),
         )
 
@@ -18,6 +17,7 @@ class Block(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, in_channels=3, features=[64, 128, 256, 512]):
         super().__init__()
+        #70*70PatchGAN
         self.initial = nn.Sequential(
             nn.Conv2d(
                 in_channels,
@@ -41,14 +41,3 @@ class Discriminator(nn.Module):
     def forward(self, x):
         x = self.initial(x)
         return torch.sigmoid(self.model(x))
-
-def test():
-    x = torch.randn((5, 3, 256, 256))
-    model = Discriminator(in_channels=3)
-    preds = model(x)
-    print(preds.shape)
-
-
-if __name__ == "__main__":
-    test()
-

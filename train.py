@@ -1,6 +1,4 @@
 import torch
-from torch.backends import cudnn
-
 from dataset import HorseZebraDataset
 import sys
 from utils import save_checkpoint, load_checkpoint
@@ -10,8 +8,8 @@ import torch.optim as optim
 import config
 from tqdm import tqdm
 from torchvision.utils import save_image
-from discriminator_model import Discriminator
-from generator_model import Generator
+from discriminator_net import Discriminator
+from generator_net import Generator
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, opt_disc, opt_gen, l1, mse, d_scaler, g_scaler):
@@ -23,7 +21,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, opt_disc, opt_gen, l1, mse, d
         zebra = zebra.to(config.DEVICE)
         horse = horse.to(config.DEVICE)
 
-        # Train Discriminators H and Zj
+        # Train Discriminators H and Z
         with torch.cuda.amp.autocast():
             fake_horse = gen_H(zebra)
             D_H_real = disc_H(horse)
@@ -86,9 +84,9 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, opt_disc, opt_gen, l1, mse, d
 
         if idx % 200 == 0:
             save_image(fake_horse*0.5+0.5, config.SAVE_DIR+f"/horse_{idx}.png")
-            save_image(fake_zebra*0.5+0.5,config.SAVE_DIR +f"/zebra_{idx}.png")
+            save_image(fake_zebra*0.5+0.5, config.SAVE_DIR+f"/zebra_{idx}.png")
 
-        loop.set_postfix(H_real=H_reals/(idx+1), H_fake=H_fakes/(idx+1),D_loss=D_loss,G_loss=G_loss)
+        loop.set_postfix(H_real=H_reals/(idx+1), H_fake=H_fakes/(idx+1),D_loss=D_loss.item(),G_loss=G_loss.item())
 
 
 
@@ -111,13 +109,11 @@ def main():
 
     L1 = nn.L1Loss()
     mse = nn.MSELoss()
-
+#定义损失函数
     if config.LOAD_MODEL:
-
         load_checkpoint(
             config.CHECKPOINT_GEN_H, gen_H, opt_gen, config.LEARNING_RATE,
         )
-
         load_checkpoint(
             config.CHECKPOINT_GEN_Z, gen_Z, opt_gen, config.LEARNING_RATE,
         )
@@ -131,15 +127,8 @@ def main():
     dataset = HorseZebraDataset(
         root_horse=config.TRAIN_DIR+"/horses", root_zebra=config.TRAIN_DIR+"/zebras", transform=config.transforms
     )
-    val_dataset = HorseZebraDataset(
-       root_horse=config.VAL_DIR+"/horses", root_zebra=config.VAL_DIR+"/zebras", transform=config.transforms
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=1,
-        shuffle=False,
-        pin_memory=True,
-    )
+
+
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -149,7 +138,7 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-
+#采用半精度加速训练
     for epoch in range(config.NUM_EPOCHS):
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, opt_disc, opt_gen, L1, mse, d_scaler, g_scaler)
 

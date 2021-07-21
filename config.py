@@ -8,7 +8,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 TRAIN_DIR = "F:/Python/ML/Machine-Learning-Collection/ML/Pytorch\GANs/CycleGAN\data/train"
 VAL_DIR = "F:/Python/ML/Machine-Learning-Collection/ML/Pytorch/GANs/CycleGAN\data/val"
 BATCH_SIZE = 1
-LEARNING_RATE = 1e-5
+LEARNING_RATE = 5e-6
 LAMBDA_IDENTITY = 0.0
 LAMBDA_CYCLE = 10
 NUM_WORKERS = 4
@@ -23,10 +23,10 @@ CHECKPOINT_CRITIC_Z = "F:/Python/ML/Machine-Learning-Collection/ML/Pytorch/GANs/
 
 transforms = A.Compose(
     [
-        A.Resize(width=256, height=256),
-        A.HorizontalFlip(p=0.5),
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255),
-        ToTensorV2(),
+        A.Resize(width=256, height=256),#调整大小
+        A.HorizontalFlip(p=0.5),#0.5的概率水平翻转
+        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255),#正则化
+        ToTensorV2(),#变为Tensor格式
      ],
     additional_targets={"image0": "image"},
 )

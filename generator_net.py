@@ -4,6 +4,7 @@ import torch.nn as nn
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, down=True, use_act=True, **kwargs):
         super().__init__()
+        #卷积/尾部卷积层，可进行上采样也可进行下采样
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, padding_mode="reflect", **kwargs)
             if down
@@ -16,6 +17,7 @@ class ConvBlock(nn.Module):
         return self.conv(x)
 
 class ResidualBlock(nn.Module):
+    #定义两层卷积的残差网络
     def __init__(self, channels):
         super().__init__()
         self.block = nn.Sequential(
@@ -34,15 +36,18 @@ class Generator(nn.Module):
             nn.InstanceNorm2d(num_features),
             nn.ReLU(inplace=True),
         )
+        #定义下采样块
         self.down_blocks = nn.ModuleList(
             [
                 ConvBlock(num_features, num_features*2, kernel_size=3, stride=2, padding=1),
                 ConvBlock(num_features*2, num_features*4, kernel_size=3, stride=2, padding=1),
             ]
         )
+        #定义残差块
         self.res_blocks = nn.Sequential(
             *[ResidualBlock(num_features*4) for _ in range(num_residuals)]
         )
+        #定义上采用块
         self.up_blocks = nn.ModuleList(
             [
                 ConvBlock(num_features*4, num_features*2, down=False, kernel_size=3, stride=2, padding=1, output_padding=1),
@@ -59,14 +64,5 @@ class Generator(nn.Module):
         x = self.res_blocks(x)
         for layer in self.up_blocks:
             x = layer(x)
+            #最终要映射到-1和1之间
         return torch.tanh(self.last(x))
-
-def test():
-    img_channels = 3
-    img_size = 256
-    x = torch.randn((2, img_channels, img_size, img_size))
-    gen = Generator(img_channels, 9)
-    print(gen(x).shape)
-
-if __name__ == "__main__":
-    test()
