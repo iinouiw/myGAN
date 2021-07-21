@@ -132,9 +132,9 @@ def main():
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
-        shuffle=True,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=True
+        shuffle=True,#随机打乱
+        num_workers=config.NUM_WORKERS,#四个线程（通常是GPU数量的四倍）
+        pin_memory=True#锁页内存，不与虚存交换，加速
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
